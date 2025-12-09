@@ -3,7 +3,13 @@
 A blockchain-based voting system that uses Non-Fungible Tokens (NFTs) to prevent Sybil attacks, ensuring that each voter can only cast one vote per proposal.
 
 ## Author
-PENG, MINQI ; SID: 1155191548
+PENG, MINQI; SID: 1155191548
+
+## Repository
+
+This project is available on GitHub: [https://github.com/mencaire/CSCI2730_Project](https://github.com/mencaire/CSCI2730_Project)
+
+You can clone the repository, report issues, or contribute to the project.
 
 ## Abstract
 
