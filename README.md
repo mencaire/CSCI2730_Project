@@ -2,7 +2,8 @@
 
 A blockchain-based voting system that uses Non-Fungible Tokens (NFTs) to prevent Sybil attacks, ensuring that each voter can only cast one vote per proposal.
 
-## Author: PENG, MINQI
+## Author
+PENG, MINQI
 
 ## Abstract
 
