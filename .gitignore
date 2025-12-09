@@ -1,5 +1,29 @@
-/.DS_Store
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
 
-# Large video files
+# Thumbnails
+Thumbs.db
+
+# Editor directories and files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Node modules (if applicable)
+node_modules/
+
+# Environment variables
+.env
+.env.local
+
+# Large media files
 *.mp4
-CSCI2730_presentation_video.mp4
+*.mov
+*.avi
+*.mkv
