@@ -2,6 +2,8 @@
 
 A blockchain-based voting system that uses Non-Fungible Tokens (NFTs) to prevent Sybil attacks, ensuring that each voter can only cast one vote per proposal.
 
+## Author: PENG, MINQI
+
 ## Abstract
 
 This project implements a decentralized voting system on the Ethereum blockchain that addresses the Sybil attack problem through the use of ERC721 NFTs as proof of voting eligibility. The system ensures one vote per eligible participant by requiring ownership of a unique, non-transferable NFT token. Each NFT can only be used once per proposal, maintaining the integrity of the voting process.
