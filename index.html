@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sybil-Resistant Voting System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 600;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .proposal-card {
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .proposal-card h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .proposal-card p {
+            color: #666;
+            margin-bottom: 15px;
+        }
+        
+        .vote-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .vote-buttons button {
+            flex: 1;
+        }
+        
+        .vote-yes {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+        
+        .vote-no {
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #ddd;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+        }
+        
+        .account-info {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .account-info strong {
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗳️ Sybil-Resistant Voting System</h1>
+        <p class="subtitle">Decentralized voting powered by NFTs</p>
+        
+        <!-- Connection Status -->
+        <div id="connectionStatus" class="status info">
+            Please connect your MetaMask wallet to get started.
+            <br><button onclick="connectWallet()" style="margin-top: 10px; width: auto; padding: 8px 16px;">Connect MetaMask Wallet</button>
+        </div>
+        
+        <!-- Account Info -->
+        <div id="accountInfo" class="account-info" style="display: none;">
+            <strong>Connected Account:</strong> <span id="accountAddress"></span><br>
+            <strong>Network:</strong> <span id="networkInfo">Loading...</span> 
+            <button onclick="refreshNetworkInfo()" style="margin-left: 10px; padding: 4px 8px; font-size: 12px; width: auto;">Refresh Network</button><br>
+            <strong>NFT Status:</strong> <span id="nftStatus">Checking...</span>
+        </div>
+        
+        <!-- Contract Addresses Section -->
+        <div class="section">
+            <h2>📋 Contract Addresses</h2>
+            <div class="form-group">
+                <label>VotingNFT Contract Address:</label>
+                <input type="text" id="nftContractAddress" placeholder="0x...">
+            </div>
+            <div class="form-group">
+                <label>VotingSystem Contract Address:</label>
+                <input type="text" id="votingContractAddress" placeholder="0x...">
+            </div>
+            <button onclick="connectContracts()">Connect Contracts</button>
+        </div>
+        
+        <!-- NFT Management Section -->
+        <div class="section">
+            <h2>🎫 Voting NFT Management</h2>
+            <div class="form-group">
+                <label>Address to Mint NFT:</label>
+                <input type="text" id="mintAddress" placeholder="0x...">
+            </div>
+            <button onclick="mintNFT()">Mint Voting NFT</button>
+            <button onclick="checkNFTStatus()">Check My NFT Status</button>
+        </div>
+        
+        <!-- Create Proposal Section -->
+        <div class="section">
+            <h2>➕ Create New Proposal</h2>
+            <div class="form-group">
+                <label>Proposal Title:</label>
+                <input type="text" id="proposalTitle" placeholder="Enter proposal title">
+            </div>
+            <div class="form-group">
+                <label>Proposal Description:</label>
+                <textarea id="proposalDescription" placeholder="Enter proposal description"></textarea>
+            </div>
+            <div class="form-group">
+                <label>Voting Duration (days):</label>
+                <input type="number" id="proposalDuration" value="7" min="1">
+            </div>
+            <button onclick="createProposal()">Create Proposal</button>
+        </div>
+        
+        <!-- Proposals List Section -->
+        <div class="section">
+            <h2>📊 Active Proposals</h2>
+            <button onclick="loadProposals()">Refresh Proposals</button>
+            <div id="proposalsList"></div>
+        </div>
+    </div>
+
+    <!-- Load ethers.js library from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <script>
+        // Check if ethers is loaded
+        if (typeof ethers === 'undefined') {
+            alert('Error: ethers.js library failed to load. Please check your internet connection or use a local server.');
+            console.error('ethers.js not loaded');
+        }
+        
+        // Contract ABIs (simplified - you'll need to get the full ABI from Remix)
+        const NFT_ABI = [
+            "function mintVotingNFT(address to) external returns (uint256)",
+            "function hasVotingNFT(address account) external view returns (bool)",
+            "function getTokenIdByOwner(address owner) external view returns (uint256)",
+            "function totalSupply() external view returns (uint256)",
+            "function owner() external view returns (address)"
+        ];
+        
+        const VOTING_ABI = [
+            "function createProposal(string memory title, string memory description, uint256 duration) external returns (uint256)",
+            "function vote(uint256 proposalId, bool support) external",
+            "function executeProposal(uint256 proposalId) external",
+            "function getProposalCount() external view returns (uint256)",
+            "function getProposal(uint256 proposalId) external view returns (string memory, string memory, uint256, uint256, uint256, bool, address)",
+            "function canVote(uint256 proposalId, address voter) external view returns (bool, string memory)",
+            "function hasVoted(uint256 proposalId, address voter) external view returns (bool)"
+        ];
+        
+        let provider, signer, nftContract, votingContract, userAddress;
+        
+        // Enhanced MetaMask detection
+        function detectMetaMask() {
+            // Multiple ways to detect MetaMask
+            const hasEthereum = typeof window.ethereum !== 'undefined';
+            const hasWeb3 = typeof window.web3 !== 'undefined';
+            const hasEthereumProvider = window.ethereum && window.ethereum.isMetaMask;
+            
+            console.log('MetaMask Detection Debug:');
+            console.log('- window.ethereum:', typeof window.ethereum);
+            console.log('- window.web3:', typeof window.web3);
+            console.log('- isMetaMask:', window.ethereum?.isMetaMask);
+            console.log('- Protocol:', window.location.protocol);
+            console.log('- User Agent:', navigator.userAgent);
+            
+            return hasEthereum || hasEthereumProvider;
+        }
+        
+        // Initialize on page load
+        window.addEventListener('load', async () => {
+            // Check protocol - file:// may have issues
+            if (window.location.protocol === 'file:') {
+                showStatus('error', '⚠️ You are opening this file directly. For better MetaMask support, please use a local server:<br><br>1. Open terminal in this folder<br>2. Run: <code>python3 -m http.server 8000</code><br>3. Visit: <code>http://localhost:8000</code>');
+            }
+            
+            // Multiple detection attempts with increasing delays
+            const attempts = [100, 500, 1000, 2000, 3000];
+            
+            for (let delay of attempts) {
+                setTimeout(async () => {
+                    if (detectMetaMask()) {
+                        provider = new ethers.providers.Web3Provider(window.ethereum);
+                        await checkConnection();
+                        if (userAddress) {
+                            showStatus('success', 'MetaMask detected and connected!');
+                        } else {
+                            showStatus('info', 'MetaMask detected! Click "Connect MetaMask Wallet" button to connect.');
+                        }
+                        return; // Stop trying once detected
+                    }
+                }, delay);
+            }
+            
+            // Final check after all attempts
+            setTimeout(() => {
+                if (!detectMetaMask()) {
+                    let errorMsg = 'MetaMask not detected. ';
+                    errorMsg += '<br><br><strong>Debug Info:</strong><br>';
+                    errorMsg += `- Protocol: ${window.location.protocol}<br>`;
+                    errorMsg += `- Browser: ${navigator.userAgent.includes('Chrome') ? 'Chrome' : navigator.userAgent.includes('Firefox') ? 'Firefox' : 'Other'}<br>`;
+                    errorMsg += `- window.ethereum: ${typeof window.ethereum}<br><br>`;
+                    errorMsg += '<strong>Solutions:</strong><br>';
+                    errorMsg += '1. Use a local server (recommended): <code>python3 -m http.server 8000</code><br>';
+                    errorMsg += '2. Ensure MetaMask extension is enabled<br>';
+                    errorMsg += '3. Try a different browser (Chrome/Firefox recommended)<br>';
+                    errorMsg += '4. Check browser console (F12) for errors';
+                    errorMsg += '<br><br><a href="https://metamask.io/download/" target="_blank" style="color: #667eea; text-decoration: underline;">Download MetaMask</a>';
+                    showStatus('error', errorMsg);
+                }
+            }, 4000);
+        });
+        
+        // Check if already connected
+        async function checkConnection() {
+            try {
+                const accounts = await provider.listAccounts();
+                if (accounts.length > 0) {
+                    userAddress = accounts[0];
+                    updateAccountInfo();
+                }
+            } catch (error) {
+                console.error('Error checking connection:', error);
+            }
+        }
+        
+        // Connect to MetaMask
+        async function connectWallet() {
+            try {
+                // Enhanced detection before connecting
+                console.log('Attempting to connect wallet...');
+                console.log('window.ethereum:', window.ethereum);
+                
+                // Try multiple detection methods
+                let ethereum = window.ethereum;
+                
+                // Check if injected by MetaMask
+                if (!ethereum) {
+                    // Try alternative detection
+                    if (window.web3 && window.web3.currentProvider) {
+                        ethereum = window.web3.currentProvider;
+                    }
+                }
+                
+                if (!ethereum) {
+                    let errorMsg = 'MetaMask not detected. ';
+                    errorMsg += '<br><br><strong>Please try:</strong><br>';
+                    errorMsg += '1. Use a local server: <code>python3 -m http.server 8000</code> then visit <code>http://localhost:8000</code><br>';
+                    errorMsg += '2. Check if MetaMask extension is enabled<br>';
+                    errorMsg += '3. Open browser console (F12) and check for errors<br>';
+                    errorMsg += '4. Try refreshing the page<br>';
+                    errorMsg += '<br><a href="https://metamask.io/download/" target="_blank" style="color: #667eea; text-decoration: underline;">Download MetaMask</a>';
+                    showStatus('error', errorMsg);
+                    return;
+                }
+                
+                showStatus('info', 'Connecting to MetaMask...');
+                
+                // Request account access
+                await ethereum.request({ method: 'eth_requestAccounts' });
+                
+                // Create provider and signer
+                provider = new ethers.providers.Web3Provider(ethereum);
+                signer = provider.getSigner();
+                userAddress = await signer.getAddress();
+                
+                // Update UI
+                await updateAccountInfo();
+                showStatus('success', 'Wallet connected successfully!');
+            } catch (error) {
+                console.error('Error connecting wallet:', error);
+                if (error.code === 4001) {
+                    showStatus('error', 'Connection rejected. Please approve the connection request in MetaMask.');
+                } else {
+                    showStatus('error', 'Failed to connect wallet: ' + (error.message || 'Unknown error') + '<br>Check browser console (F12) for details.');
+                }
+            }
+        }
+        
+        // Update account information
+        async function updateAccountInfo() {
+            if (!userAddress) {
+                return;
+            }
+            
+            document.getElementById('accountAddress').textContent = userAddress;
+            document.getElementById('accountInfo').style.display = 'block';
+            
+            // Update network info
+            try {
+                // Initialize provider if not already initialized
+                if (!provider && typeof window.ethereum !== 'undefined') {
+                    provider = new ethers.providers.Web3Provider(window.ethereum);
+                }
+                
+                if (provider) {
+                    const network = await provider.getNetwork();
+                    const networkName = network.name === 'homestead' ? 'Mainnet' : 
+                                       network.name === 'sepolia' ? 'Sepolia' : 
+                                       network.name === 'goerli' ? 'Goerli' : 
+                                       network.name || 'Unknown';
+                    document.getElementById('networkInfo').textContent = `${networkName} (Chain ID: ${network.chainId})`;
+                } else {
+                    document.getElementById('networkInfo').textContent = 'Not connected';
+                }
+            } catch (error) {
+                console.error('Error getting network info:', error);
+                document.getElementById('networkInfo').textContent = 'Unknown';
+            }
+            
+            if (nftContract) {
+                try {
+                    const hasNFT = await nftContract.hasVotingNFT(userAddress);
+                    document.getElementById('nftStatus').textContent = hasNFT ? '✅ You have a Voting NFT' : '❌ No Voting NFT';
+                } catch (error) {
+                    console.error('Error checking NFT status:', error);
+                    document.getElementById('nftStatus').textContent = 'Error checking status: ' + (error.message || 'Unknown error');
+                }
+            } else {
+                document.getElementById('nftStatus').textContent = 'Contracts not connected';
+            }
+        }
+        
+        // Validate Ethereum address
+        function isValidAddress(address) {
+            return /^0x[a-fA-F0-9]{40}$/.test(address);
+        }
+        
+        // Connect contracts
+        async function connectContracts() {
+            try {
+                // Check if ethers is loaded
+                if (typeof ethers === 'undefined') {
+                    showStatus('error', 'ethers.js library not loaded. Please refresh the page or check your internet connection.');
+                    return;
+                }
+                
+                // Check if MetaMask is available
+                if (typeof window.ethereum === 'undefined') {
+                    showStatus('error', 'MetaMask not detected. Please install MetaMask or ensure it is enabled. <a href="https://metamask.io/download/" target="_blank" style="color: #667eea; text-decoration: underline;">Download MetaMask</a>');
+                    return;
+                }
+                
+                // Force create a new provider to get fresh network info
+                provider = new ethers.providers.Web3Provider(window.ethereum);
+                
+                // Get current network BEFORE connecting
+                const network = await provider.getNetwork();
+                const chainId = network.chainId;
+                
+                // Map chain IDs to network names
+                let networkName;
+                if (chainId === 1) {
+                    networkName = 'Mainnet';
+                } else if (chainId === 11155111) {
+                    networkName = 'Sepolia';
+                } else if (chainId === 5) {
+                    networkName = 'Goerli';
+                } else {
+                    networkName = network.name || `Chain ${chainId}`;
+                }
+                
+                console.log('Current network:', networkName, 'Chain ID:', chainId);
+                
+                // Check if on Mainnet and warn user
+                if (chainId === 1) {
+                    showStatus('error', `⚠️ <strong>You are on Mainnet (Chain ID: 1)</strong><br><br>Please switch to Sepolia testnet in MetaMask:<br><br>1. Click MetaMask icon<br>2. Click network dropdown at the top<br>3. Select <strong>Sepolia</strong><br>4. Click "Refresh Network" button on this page<br>5. Then try connecting contracts again`);
+                    // Update network display
+                    document.getElementById('networkInfo').textContent = `${networkName} (Chain ID: ${chainId})`;
+                    return;
+                }
+                
+                // Update network display
+                if (document.getElementById('networkInfo')) {
+                    document.getElementById('networkInfo').textContent = `${networkName} (Chain ID: ${chainId})`;
+                }
+                
+                if (!signer) {
+                    await connectWallet();
+                }
+                
+                const nftAddress = document.getElementById('nftContractAddress').value.trim();
+                const votingAddress = document.getElementById('votingContractAddress').value.trim();
+                
+                if (!nftAddress || !votingAddress) {
+                    showStatus('error', 'Please enter both contract addresses');
+                    return;
+                }
+                
+                // Validate address format
+                if (!isValidAddress(nftAddress)) {
+                    showStatus('error', 'Invalid VotingNFT contract address format. Must be 0x followed by 40 hex characters.');
+                    return;
+                }
+                
+                if (!isValidAddress(votingAddress)) {
+                    showStatus('error', 'Invalid VotingSystem contract address format. Must be 0x followed by 40 hex characters.');
+                    return;
+                }
+                
+                // Create contract instances
+                nftContract = new ethers.Contract(nftAddress, NFT_ABI, signer);
+                votingContract = new ethers.Contract(votingAddress, VOTING_ABI, signer);
+                
+                // Test connection by calling a view function
+                let nftError = null;
+                let votingError = null;
+                
+                // Test VotingNFT contract
+                try {
+                    await nftContract.totalSupply();
+                } catch (error) {
+                    nftError = error;
+                    console.error('VotingNFT connection error:', error);
+                }
+                
+                // Test VotingSystem contract
+                try {
+                    await votingContract.getProposalCount();
+                } catch (error) {
+                    votingError = error;
+                    console.error('VotingSystem connection error:', error);
+                }
+                
+                // Provide detailed error message
+                if (nftError || votingError) {
+                    let errorMsg = 'Failed to connect to contracts.<br><br>';
+                    errorMsg += `<strong>Current Network:</strong> ${networkName} (Chain ID: ${network.chainId})<br><br>`;
+                    
+                    // Check if on mainnet when contracts are likely on testnet
+                    if (network.chainId === 1) {
+                        errorMsg += '<strong>⚠️ Network Mismatch Detected!</strong><br>';
+                        errorMsg += 'You are connected to Mainnet, but your contracts are likely deployed on a testnet.<br><br>';
+                        errorMsg += '<strong>Please switch to the correct testnet:</strong><br>';
+                        errorMsg += '1. Click MetaMask extension icon<br>';
+                        errorMsg += '2. Click network dropdown (top of MetaMask)<br>';
+                        errorMsg += '3. Select <strong>Sepolia</strong> or <strong>Goerli</strong> (whichever you deployed to)<br>';
+                        errorMsg += '4. Refresh this page and try again<br><br>';
+                    }
+                    
+                    if (nftError) {
+                        errorMsg += `<strong>VotingNFT Error:</strong> ${nftError.message || 'Contract not found or ABI mismatch'}<br>`;
+                        errorMsg += `Address: ${nftAddress}<br><br>`;
+                    }
+                    
+                    if (votingError) {
+                        errorMsg += `<strong>VotingSystem Error:</strong> ${votingError.message || 'Contract not found or ABI mismatch'}<br>`;
+                        errorMsg += `Address: ${votingAddress}<br><br>`;
+                    }
+                    
+                    if (network.chainId !== 1) {
+                        errorMsg += '<strong>Please check:</strong><br>';
+                        errorMsg += '1. Contract addresses are correct<br>';
+                        errorMsg += '2. Contracts are deployed on the current network<br>';
+                        errorMsg += '3. MetaMask is connected to the correct network';
+                    }
+                    
+                    showStatus('error', errorMsg);
+                    nftContract = null;
+                    votingContract = null;
+                    return;
+                }
+                
+                showStatus('success', 'Contracts connected successfully!');
+                await updateAccountInfo();
+                await loadProposals();
+            } catch (error) {
+                console.error('Error connecting contracts:', error);
+                showStatus('error', 'Failed to connect contracts: ' + (error.message || 'Unknown error'));
+                nftContract = null;
+                votingContract = null;
+            }
+        }
+        
+        // Mint NFT
+        async function mintNFT() {
+            try {
+                if (!nftContract) {
+                    showStatus('error', 'Please connect contracts first');
+                    return;
+                }
+                
+                const mintAddress = document.getElementById('mintAddress').value || userAddress;
+                showStatus('info', 'Minting NFT... Please confirm the transaction in MetaMask.');
+                
+                const tx = await nftContract.mintVotingNFT(mintAddress);
+                await tx.wait();
+                
+                showStatus('success', 'NFT minted successfully!');
+                await updateAccountInfo();
+            } catch (error) {
+                showStatus('error', 'Failed to mint NFT: ' + error.message);
+            }
+        }
+        
+        // Check NFT status
+        async function checkNFTStatus() {
+            try {
+                if (!nftContract) {
+                    showStatus('error', 'Please connect contracts first');
+                    return;
+                }
+                
+                const hasNFT = await nftContract.hasVotingNFT(userAddress);
+                const tokenId = await nftContract.getTokenIdByOwner(userAddress);
+                const totalSupply = await nftContract.totalSupply();
+                
+                if (hasNFT) {
+                    showStatus('success', `You have a Voting NFT! Token ID: ${tokenId.toString()}`);
+                } else {
+                    showStatus('info', `You don't have a Voting NFT. Total NFTs minted: ${totalSupply.toString()}`);
+                }
+                
+                await updateAccountInfo();
+            } catch (error) {
+                showStatus('error', 'Failed to check NFT status: ' + error.message);
+            }
+        }
+        
+        // Create proposal
+        async function createProposal() {
+            try {
+                if (!votingContract) {
+                    showStatus('error', 'Please connect contracts first');
+                    return;
+                }
+                
+                const title = document.getElementById('proposalTitle').value;
+                const description = document.getElementById('proposalDescription').value;
+                const durationDays = parseInt(document.getElementById('proposalDuration').value);
+                
+                if (!title || !description) {
+                    showStatus('error', 'Please fill in all fields');
+                    return;
+                }
+                
+                const duration = durationDays * 24 * 60 * 60; // Convert to seconds
+                
+                showStatus('info', 'Creating proposal... Please confirm the transaction in MetaMask.');
+                
+                const tx = await votingContract.createProposal(title, description, duration);
+                const receipt = await tx.wait();
+                
+                // Find the ProposalCreated event
+                const event = receipt.events.find(e => e.event === 'ProposalCreated');
+                const proposalId = event.args.proposalId;
+                
+                showStatus('success', `Proposal created successfully! Proposal ID: ${proposalId.toString()}`);
+                
+                // Clear form
+                document.getElementById('proposalTitle').value = '';
+                document.getElementById('proposalDescription').value = '';
+                document.getElementById('proposalDuration').value = '7';
+                
+                await loadProposals();
+            } catch (error) {
+                showStatus('error', 'Failed to create proposal: ' + error.message);
+            }
+        }
+        
+        // Load proposals
+        async function loadProposals() {
+            try {
+                if (!votingContract) {
+                    const proposalsList = document.getElementById('proposalsList');
+                    proposalsList.innerHTML = '<p>Please connect contracts first.</p>';
+                    return;
+                }
+                
+                if (!userAddress) {
+                    const proposalsList = document.getElementById('proposalsList');
+                    proposalsList.innerHTML = '<p>Please connect your wallet first.</p>';
+                    return;
+                }
+                
+                const proposalCount = await votingContract.getProposalCount();
+                const proposalsList = document.getElementById('proposalsList');
+                proposalsList.innerHTML = '';
+                
+                if (proposalCount.toString() === '0') {
+                    proposalsList.innerHTML = '<p>No proposals found.</p>';
+                    return;
+                }
+                
+                for (let i = 0; i < proposalCount; i++) {
+                    let proposal, canVoteResult, hasVotedResult;
+                    
+                    try {
+                        proposal = await votingContract.getProposal(i);
+                        canVoteResult = await votingContract.canVote(i, userAddress);
+                        hasVotedResult = await votingContract.hasVoted(i, userAddress);
+                    } catch (error) {
+                        console.error(`Error loading proposal ${i}:`, error);
+                        continue; // Skip this proposal and continue with next
+                    }
+                    
+                    // Handle proposal data - it might be an array or object
+                    let title, description, deadline, yesVotes, noVotes, executed, creator;
+                    
+                    if (Array.isArray(proposal)) {
+                        // If it's an array (ethers.js tuple)
+                        title = proposal[0];
+                        description = proposal[1];
+                        deadline = proposal[2];
+                        yesVotes = proposal[3];
+                        noVotes = proposal[4];
+                        executed = proposal[5];
+                        creator = proposal[6];
+                    } else {
+                        // If it's an object
+                        title = proposal.title || proposal[0];
+                        description = proposal.description || proposal[1];
+                        deadline = proposal.deadline || proposal[2];
+                        yesVotes = proposal.yesVotes || proposal[3];
+                        noVotes = proposal.noVotes || proposal[4];
+                        executed = proposal.executed || proposal[5];
+                        creator = proposal.creator || proposal[6];
+                    }
+                    
+                    // Ensure values are defined
+                    if (!deadline || !yesVotes || noVotes === undefined) {
+                        console.error(`Invalid proposal data for proposal ${i}:`, proposal);
+                        continue;
+                    }
+                    
+                    const deadlineDate = new Date(parseInt(deadline.toString()) * 1000);
+                    const isExpired = deadlineDate < new Date();
+                    
+                    const yesVotesStr = yesVotes.toString();
+                    const noVotesStr = noVotes.toString();
+                    const totalVotes = (parseInt(yesVotesStr) + parseInt(noVotesStr)).toString();
+                    
+                    const proposalCard = document.createElement('div');
+                    proposalCard.className = 'proposal-card';
+                    proposalCard.innerHTML = `
+                        <h3>${title || 'Untitled Proposal'}</h3>
+                        <p>${description || 'No description'}</p>
+                        <p><strong>Deadline:</strong> ${deadlineDate.toLocaleString()}</p>
+                        <p><strong>Status:</strong> ${executed ? 'Executed' : (isExpired ? 'Expired' : 'Active')}</p>
+                        <div class="stats">
+                            <div class="stat-item">
+                                <div class="stat-value">${yesVotesStr}</div>
+                                <div class="stat-label">Yes Votes</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">${noVotesStr}</div>
+                                <div class="stat-label">No Votes</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">${totalVotes}</div>
+                                <div class="stat-label">Total Votes</div>
+                            </div>
+                        </div>
+                        ${!executed && !isExpired && canVoteResult && canVoteResult[0] && !hasVotedResult ? `
+                            <div class="vote-buttons">
+                                <button class="vote-yes" onclick="vote(${i}, true)">Vote Yes</button>
+                                <button class="vote-no" onclick="vote(${i}, false)">Vote No</button>
+                            </div>
+                        ` : hasVotedResult ? `
+                            <p style="color: #667eea; font-weight: bold;">✓ You have already voted on this proposal</p>
+                        ` : canVoteResult && !canVoteResult[0] ? `
+                            <p style="color: #eb3349;">${canVoteResult[1] || 'Cannot vote'}</p>
+                        ` : ''}
+                        ${isExpired && !executed ? `
+                            <button onclick="executeProposal(${i})">Execute Proposal</button>
+                        ` : ''}
+                    `;
+                    proposalsList.appendChild(proposalCard);
+                }
+            } catch (error) {
+                console.error('Error loading proposals:', error);
+                const proposalsList = document.getElementById('proposalsList');
+                proposalsList.innerHTML = '<p style="color: red;">Error loading proposals: ' + (error.message || 'Unknown error') + '</p>';
+                showStatus('error', 'Failed to load proposals: ' + (error.message || 'Unknown error'));
+            }
+        }
+        
+        // Vote on proposal
+        async function vote(proposalId, support) {
+            try {
+                if (!votingContract) {
+                    showStatus('error', 'Please connect contracts first');
+                    return;
+                }
+                
+                showStatus('info', 'Submitting vote... Please confirm the transaction in MetaMask.');
+                
+                const tx = await votingContract.vote(proposalId, support);
+                await tx.wait();
+                
+                showStatus('success', `Vote cast successfully! You voted ${support ? 'Yes' : 'No'}`);
+                await loadProposals();
+                await updateAccountInfo();
+            } catch (error) {
+                showStatus('error', 'Failed to vote: ' + error.message);
+            }
+        }
+        
+        // Execute proposal
+        async function executeProposal(proposalId) {
+            try {
+                if (!votingContract) {
+                    showStatus('error', 'Please connect contracts first');
+                    return;
+                }
+                
+                showStatus('info', 'Executing proposal... Please confirm the transaction in MetaMask.');
+                
+                const tx = await votingContract.executeProposal(proposalId);
+                await tx.wait();
+                
+                showStatus('success', 'Proposal executed successfully!');
+                await loadProposals();
+            } catch (error) {
+                showStatus('error', 'Failed to execute proposal: ' + error.message);
+            }
+        }
+        
+        // Show status message
+        function showStatus(type, message) {
+            const statusDiv = document.getElementById('connectionStatus');
+            statusDiv.className = `status ${type}`;
+            // Use innerHTML to support HTML links, but be careful with user input
+            if (message.includes('<a') || message.includes('<br>')) {
+                statusDiv.innerHTML = message;
+            } else {
+                statusDiv.textContent = message;
+            }
+        }
+        
+        // Listen for account changes
+        window.ethereum?.on('accountsChanged', (accounts) => {
+            if (accounts.length === 0) {
+                showStatus('info', 'Please connect your MetaMask wallet');
+                userAddress = null;
+                document.getElementById('accountInfo').style.display = 'none';
+            } else {
+                userAddress = accounts[0];
+                updateAccountInfo();
+            }
+        });
+        
+        // Listen for network changes
+        window.ethereum?.on('chainChanged', (chainId) => {
+            // Reload page when network changes to update everything
+            window.location.reload();
+        });
+        
+        // Manual MetaMask detection function
+        async function checkMetaMask() {
+            if (typeof window.ethereum !== 'undefined') {
+                showStatus('success', 'MetaMask detected! Connecting...');
+                provider = new ethers.providers.Web3Provider(window.ethereum);
+                await checkConnection();
+                if (!userAddress) {
+                    await connectWallet();
+                }
+            } else {
+                showStatus('error', 'MetaMask still not detected. Please ensure MetaMask is installed and enabled. <a href="https://metamask.io/download/" target="_blank" style="color: #667eea; text-decoration: underline;">Download MetaMask</a>');
+            }
+        }
+        
+        // Refresh network information
+        async function refreshNetworkInfo() {
+            try {
+                if (!provider && typeof window.ethereum !== 'undefined') {
+                    provider = new ethers.providers.Web3Provider(window.ethereum);
+                }
+                
+                if (provider) {
+                    const network = await provider.getNetwork();
+                    const chainId = network.chainId;
+                    
+                    let networkName;
+                    if (chainId === 1) {
+                        networkName = 'Mainnet';
+                    } else if (chainId === 11155111) {
+                        networkName = 'Sepolia';
+                    } else if (chainId === 5) {
+                        networkName = 'Goerli';
+                    } else {
+                        networkName = network.name || `Chain ${chainId}`;
+                    }
+                    
+                    document.getElementById('networkInfo').textContent = `${networkName} (Chain ID: ${chainId})`;
+                    showStatus('success', `Network updated: ${networkName} (Chain ID: ${chainId})`);
+                }
+            } catch (error) {
+                console.error('Error refreshing network:', error);
+                showStatus('error', 'Failed to refresh network info');
+            }
+        }
+    </script>
+</body>
+</html>
+
