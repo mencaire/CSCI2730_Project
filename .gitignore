@@ -1,1 +1,5 @@
 /.DS_Store
+
+# Large video files
+*.mp4
+CSCI2730_presentation_video.mp4
